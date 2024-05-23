@@ -26,6 +26,23 @@ def go_back():
     reset_password_frame.pack_forget()
     login_frame.pack(pady=10, padx=10, fill="both", expand=True)
 
+def reset_password():
+    email = reset_email_entry.get()
+    new_password = new_password_entry.get()
+    confirm_password = confirm_password_entry.get()
+    
+    if new_password != confirm_password:
+        reset_status_label.configure(text="Las contraseñas no coinciden", text_color="red")
+        return
+    
+    conn = sqlite3.connect("users.db")
+    cursor = conn.cursor()
+    cursor.execute("UPDATE users SET password=? WHERE email=?", (new_password, email))
+    conn.commit()
+    conn.close()
+    
+    reset_status_label.configure(text="Contraseña restablecida con éxito", text_color="green")
+
 def login_user():
     email = email_entry.get()
     password = password_entry.get()
@@ -52,8 +69,10 @@ def send_reset_link():
     conn.close()
 
     if user:
-        reset_status_label.configure(text="Enlace de restablecimiento enviado", text_color="green")
-        # Aquí puedes agregar la lógica para enviar el correo de restablecimiento
+        reset_status_label.configure(text="Email verificado. Introduzca la nueva contraseña.", text_color="green")
+        new_password_entry.pack(pady=5)
+        confirm_password_entry.pack(pady=5)
+        reset_password_button.pack(pady=20)
     else:
         reset_status_label.configure(text="Email no encontrado", text_color="red")
 
@@ -152,6 +171,11 @@ reset_email_entry.pack(pady=5)
 # Botón para enviar el enlace de restablecimiento
 send_reset_link_button = ctk.CTkButton(master=reset_password_frame, text="Send Reset Link", width=250, height=40, corner_radius=10, fg_color="#FFB6C1", command=send_reset_link)
 send_reset_link_button.pack(pady=20)
+
+# Nuevos campos para la nueva contraseña
+new_password_entry = ctk.CTkEntry(master=reset_password_frame, placeholder_text="Nueva Contraseña", show="*", width=250, height=40, corner_radius=10)
+confirm_password_entry = ctk.CTkEntry(master=reset_password_frame, placeholder_text="Confirmar Contraseña", show="*", width=250, height=40, corner_radius=10)
+reset_password_button = ctk.CTkButton(master=reset_password_frame, text="Restablecer Contraseña", width=250, height=40, corner_radius=10, fg_color="#FFB6C1", command=reset_password)
 
 # Etiqueta de estado de la recuperación de contraseña
 reset_status_label = ctk.CTkLabel(master=reset_password_frame, text="")
